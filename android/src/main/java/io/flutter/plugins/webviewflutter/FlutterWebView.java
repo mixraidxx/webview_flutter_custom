@@ -26,6 +26,9 @@ import io.flutter.plugin.platform.PlatformView;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import android.app.Activity;
+import android.content.ContextWrapper;
+        
 
 public class FlutterWebView implements PlatformView, MethodCallHandler {
   private static final String JS_CHANNEL_NAMES_FIELD = "javascriptChannelNames";
@@ -87,7 +90,19 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
     DisplayManager displayManager =
         (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
     displayListenerProxy.onPreWebViewInitialization(displayManager);
-    webView = new InputAwareWebView(context, containerView);
+            // --- INICIO DE LA MODIFICACIÓN ---
+
+        // Busca la Activity a partir del contexto que nos llega.
+    Activity activity = getActivity(context);
+        
+        // Si encontramos la Activity, la usamos; si no, usamos el contexto original.
+    final Context currentContext = (activity != null) ? activity : context;
+
+        // Crea el webView con el contexto corregido.
+    webView = new InputAwareWebView(currentContext, containerView);
+
+        // --- FIN DE LA MODIFICACIÓN ---
+        
     displayListenerProxy.onPostWebViewInitialization(displayManager);
 
     platformThreadHandler = new Handler(context.getMainLooper());
@@ -409,4 +424,18 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
     webView.dispose();
     webView.destroy();
   }
+
+  private static Activity getActivity(Context context) {
+            if (context == null) {
+                return null;
+            }
+            while (context instanceof ContextWrapper) {
+                if (context instanceof Activity) {
+                    return (Activity) context;
+                }
+                context = ((ContextWrapper) context).getBaseContext();
+            }
+            return null;
+        }
+        
 }

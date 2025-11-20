@@ -1,6 +1,6 @@
 name: webview_flutter_custom
 description: A Flutter plugin that provides a WebView widget on Android and iOS.
-version: 1.0.0
+version: 1.0.1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
